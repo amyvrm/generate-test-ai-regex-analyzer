@@ -10,6 +10,7 @@ services:
       SUBSCRIBER: ${SUBSCRIBER}
       PASSWORD: ${PASSWORD}
       TSL_ID: ${TSL_ID}
+      PORTAL_URL: ${PORTAL_URL}
     command: >
       --user-id $USER_ID --subscriber $SUBSCRIBER --password $PASSWORD --tsl-id $TSL_ID --download-dir downloads
 
@@ -22,26 +23,18 @@ services:
     environment:
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-      PDF_FILE_PATH: ${PDF_FILE_PATH}
-    command: 
-      - python
-      - src/automate_regex.py
-      - --pdf_file_path
-      - "${PDF_FILE_PATH}"
-      - --access_key
-      - "${AWS_ACCESS_KEY_ID}"
-      - --secret_key
-      - "${AWS_SECRET_ACCESS_KEY}"
+      TSL_ID: ${TSL_ID}
+    command: >
+      python src/automate_regex.py --tsl_id $TSL_ID
 
   extract_filter:
     build: .
     volumes:
       - ./report:/app/report
     environment:
-      AI_REPORT_FILE: ${AI_REPORT_FILE}
-    entrypoint: ["python", "src/extract_filter.py"]
-      # Now you can pass arguments directly after the service name in docker-compose run
-      # Example: docker-compose run --rm extract_filter --ai_report_file <file>
+      TSL_ID: ${TSL_ID}
+    command: >
+      python src/extract_filter.py --tsl_id $TSL_ID
 
   run_regex:
     build: .
@@ -52,3 +45,10 @@ services:
       TSL_ID: ${TSL_ID}
     command: >
       python src/run_regex_on_pcaps.py --tsl_id $TSL_ID
+
+  generate_dashboard:
+    build: .
+    volumes:
+      - ./report:/app/report
+    command: >
+      python src/generate_dashboard.py

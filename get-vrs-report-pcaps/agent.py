@@ -31,7 +31,8 @@ class VRSPortalAIAgent:
         "Vulnerability Attack PCAP"
     ]
 
-    def __init__(self, user_id, subscriber, password, tsl_id, download_dir):
+    def __init__(self, portal_url, user_id, subscriber, password, tsl_id, download_dir):
+        self.portal_url = portal_url
         self.user_id = user_id
         self.subscriber = subscriber
         self.password = password
@@ -79,10 +80,7 @@ class VRSPortalAIAgent:
                     raise
 
     def login(self):
-        portal_url = os.environ.get("PORTAL_URL")
-        if not portal_url:
-            raise ValueError("PORTAL_URL environment variable must be set for portal login.")
-        self.driver.get(portal_url)
+        self.driver.get(self.portal_url)
         self.robust_find(By.ID, "user_username").send_keys(self.user_id)
         self.robust_find(By.ID, "user_subscriber_number").send_keys(self.subscriber)
         self.robust_find(By.ID, "user_password").send_keys(self.password)
@@ -126,17 +124,14 @@ class VRSPortalAIAgent:
     def download_resources(self):
         for label in self.RESOURCE_LABELS:
             try:
-                # 1. Find the "Resources" row in the outer summary table and get the inner resource table
                 resources_table = self.driver.find_element(
                     By.XPATH,
                     "//td[normalize-space(text())='Resources']/following-sibling::td[1]/table[contains(@class, 'widescreen')]"
                 )
-                # 2. Find the row with the exact label in the first <td>
                 resource_row = resources_table.find_element(
                     By.XPATH,
                     f".//tr[normalize-space(td[1])=\"{label}\"]"
                 )
-                # 3. Find the download link in the second <td>
                 links = resource_row.find_elements(
                     By.XPATH,
                     ".//td[2]//a[@title='Download']"
@@ -153,7 +148,6 @@ class VRSPortalAIAgent:
                 print(f"Resource '{label}' not found for TSL ID {self.tsl_id}. Error: {e}")
 
     def run(self):
-        """Run the full agent workflow."""
         try:
             self.setup()
             self.login()
@@ -172,18 +166,16 @@ if __name__ == "__main__":
     parser.add_argument("--password", required=True)
     parser.add_argument("--tsl-id", required=True, help="Comma-separated TSL IDs.")
     parser.add_argument("--download-dir", default="downloads")
+    portal_url = os.environ.get("PORTAL_URL")
+    if not portal_url:
+        raise ValueError("The environment variable 'PORTAL_URL' must be set.")
     args = parser.parse_args()
-    # Ensure the downloads folder exists
     os.makedirs(args.download_dir, exist_ok=True)
-    # Always treat tsl_id as a list, even if only one is provided
     tsl_ids = [tid.strip() for tid in args.tsl_id.split(",") if tid.strip()]
-    print(f"TSL IDs to process: {tsl_ids}")
-    # Process each TSL ID (supports both single and multiple, comma-separated)
     for tsl_id in tsl_ids:
-        # Always create a subfolder for each TSL ID inside the downloads directory
         tsl_dir = os.path.join(args.download_dir, tsl_id)
         os.makedirs(tsl_dir, exist_ok=True)
-        agent = VRSPortalAIAgent(args.user_id, args.subscriber, args.password, tsl_id, tsl_dir)
+        agent = VRSPortalAIAgent(portal_url, args.user_id, args.subscriber, args.password, tsl_id, tsl_dir)
         agent.run()
         print(f"Completed processing for TSL ID: {tsl_id}")
 

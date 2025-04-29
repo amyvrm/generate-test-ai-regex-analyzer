@@ -49,5 +49,41 @@ Below is a high-level architecture diagram of the workflow:
 
 This diagram shows the flow from downloading vulnerability reports and PCAPs, through AI-based regex generation, to automated PCAP analysis and reporting.
 
+## Services Overview
+
+- **Agent Service (`get-vrs-report-pcaps/agent.py`)**: Downloads vulnerability reports and PCAPs from the security portal for specified TSL IDs.
+- **AI Regex Service (`src/automate_regex.py`)**: Uses LLMs to analyze reports and generate regex filters.
+- **PCAP Analysis Service (`src/run_regex_on_pcaps.py`)**: Applies generated regex to PCAPs for automated analysis and reporting.
+- **Dashboard/Reporting (`src/generate_dashboard.py`)**: Generates dashboards and summary reports from analysis results.
+
+## Running with Docker Compose
+
+1. Ensure Docker and Docker Compose are installed on your system.
+2. Clone this repository and navigate to the project directory.
+3. Set up your `.env` file as described above.
+4. Build and start all services:
+
+```sh
+docker-compose up --build
+```
+
+This command will build the images and start all services defined in `docker-compose.yml`.
+
+- To stop the services, press `Ctrl+C` or run:
+
+```sh
+docker-compose down
+```
+
+## Running All Services with Shell Script
+
+Alternatively, you can use the provided shell script to run all services sequentially:
+
+```sh
+bash src/run_all_services.sh
+```
+
+This script will execute the main workflow: downloading reports/pcaps, generating regex, running analysis, and producing reports.
+
 ## License
 This project is licensed under the MIT License. See the LICENSE file for details.

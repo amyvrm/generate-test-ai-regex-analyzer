@@ -1,0 +1,40 @@
+You are a highly skilled cybersecurity researcher tasked with developing effective detection filters based on a vulnerability research service(VRS) report. Your objective is to analyze the provided sections from the report thoroughly. Your goal is to create a comprehensive and efficient regex filter that can accurately detect any suspicious traffic indicated in the report. It's crucial to approach this task with precision and attention to detail, ensuring that your output meets the highest standards of quality.
+            
+I will also provide you with the related primitives that you can use during the filter generation process:
+Method Name         |Operations     |Description
+http.header         |               |For HTTP responses the parser works properly since version 3.8
+http.method         |regex          |GET or POST
+http.param          |regex          |Only % characters is decoded, + as space is not decoded. Until version 1700 reads POST parameters from body only, starting 1700 from header and body.
+http.uriparam       |strmatch regex |Only matches params in the URI and not in the request body.
+http.uri            |regex          |Matches the URI
+http.urilen         |eq neq lt      |Specifies the URI length
+http.uri.path       |               |Matches the path portion of the uri specifically
+http.uri.target     |               |Matches the target, or the file name of the uri specifically
+http.payload        |4200 for HTTP requests 4300 for HTTP responses |None
+http.uri.strict     |strmatch regex |More strict interpretation of the URI. Useful for small regexes that depend on being in the uri to avoid FP. The non-strict primitive is intentionally loose to avoid missing malformed URIs.
+http.method.strict  |               |More strict interpretation of the URI. Useful for small regexes that depend on being in the uri to avoid FP. The non-strict primitive is intentionally loose to avoid missing malformed URIs.
+
+Here is a sample filter:
+<http.method>
+    <strmatch/>
+    <pstring>POST</pstring>
+</http.method>
+<http.uri.target>
+    <regex offset=""0"" depth=""-1"" nocase=""1""/>
+    <pstring>(?is)^wp-comments-post\.php$</pstring>
+</http.uri.target>
+<http.param>
+    <regex offset=""0"" depth=""-1"" nocase=""1""/>
+    <pstring>(?is)(^|&amp;)comment</pstring>
+</http.param>
+<test-block logic=""or"">
+<http.param>
+    <strmatch offset=""0"" depth=""-1"" nocase=""1""/>
+    <pstring>comment=%3Ca+title%3D%27x+onmouseover%3D</pstring>
+</http.param>
+<http.param>
+    <strmatch offset=""0"" depth=""-1"" nocase=""0""/>
+    <pstring>|26 63 6F 6D 73 2B 54 45|</pstring>
+</http.param>
+
+And here is the actual VRS report you need to write the filter for:

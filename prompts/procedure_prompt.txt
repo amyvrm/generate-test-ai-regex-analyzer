@@ -1,0 +1,40 @@
+You should follow these steps strictly to generate the desired detection filter please note that anything enclosed with `` are placeholders.
+### Step 1: Detailed Analysis and Key Information Extraction
+- **Extract Critical Components:** Focus on identifying the HTTP method, URI structure (path and target), parameters, request header, payload characteristics, and anything else related to the vulnerability. Pay special attention to section 6.1. Remote Detection of Generic Attacks and you must include any text enclosed by double quote(") in this section as they indicate the key detection metrics.
+- **Understand the Application Context:** Gain a deep understanding of how the application (e.g., WordPress and its plugins) handles URLs and parameters. This understanding will guide the case sensitivity and encoding considerations.
+
+### Step 2: Analyzing Report and Structuring the Filter with Precision
+Analyze the given VRS report in detail with the information extracted in the previous step to produce a list of items that will be used to produce the filter. Please note that in the analysis step, you must provide an accurate filter primitive block. Do not cut corners, don't generate short analysis. For each analysis item, if you identify a potential improvement over the naive primitive, please include that in the analysis step and apply it in the filter. Longer response is perferred.
+For example:
+**Analysis:**
+    - Protocol:
+        - http.method: `example HTTP method`
+    - The vulnerability exists when calling to uri `www.example.com/path/target.php`:
+        - http.uri.path: `www.example.com/path/`
+        - http.uri.target: `target.php`
+    - The vulnerability can also be triggered when calling to uri `www.example.com/path/target2.php`
+        - test-block-or
+        - http.uri.path: `www.example.com/path/`
+        - http.uri.target: `target2.php`
+    - To check for the critical parameter:
+        - http.param: `sample1=sample2`
+        - http.param: `sample3=sample4`
+
+### Step 2.5: Learn from similar VRS detection guideline and filter(optional)
+If provided with similar VRS detection guidelines and their filter, please include this section in your response as well. In this section, you will need to learn how the filters are structured and what detection techniques were applied and apply them in your generated filter. (In this case since I provided you with this you need to include this section.)
+For example:
+**Analysis on Similar Detection Guidelines:**
+- From the provided similar VRS detection guideline and their filters, they use [\\/] for enhanced detection ability.
+- The provided filter also seperate the uri path and the uri target for more precise detection.
+- ... 
+
+### Step 3: Crafting the Filter
+- **Granular Matching:** Apply the insights from the analysis to create distinct blocks for different components of the HTTP request. This includes separate blocks for the HTTP method, URI path, URI target, and each relevant parameter.
+- **Regex Patterns:** Utilize regex patterns that are both specific to the vulnerability and flexible enough to account for minor variations in the request structure.
+- **Design Consideration:** Take the aforementioned design consideration into account when writing the filter.
+
+You must make it so that anything you include in your final filter, should be reflected in the Key Information and Analysis steps. Anything you do here must be reasonable, you can't magically make up correct information, analysis, or filter that's never mentioned in the VRS report.
+All in all, your response should be structured as the follows:
+    - ** Key Information **: A list of all key information gathered from the provided report that will be used in the analysis step and the final filter. You must not include anything that's not included in the report.
+    - ** Analysis **: A comprehensive analysis based on the given report and the target filter. That will be directly reflected in the final filter. Please also provide explaination here. You must not provide analysis that's not based on the VRS report or key information gathered. 
+    - ** Filter **: The final filter integrates analysis and information from previous steps.

@@ -1,0 +1,6 @@
+{
+    "pcap_folder": "pcaps",  
+    "report_folder": "report",
+    "ai_report_path": "report/ai_report",
+    "ai_regex_path": "report/ai_regex" 
+}
